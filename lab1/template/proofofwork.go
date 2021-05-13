@@ -1,8 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
 	"math"
 	"math/big"
+	"math/rand"
 )
 
 var (
@@ -27,12 +29,17 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 	return pow
 }
 
-
 // Run performs a proof-of-work
 // implement
 func (pow *ProofOfWork) Run() (int, []byte) {
 	nonce := 0
-
+	// TODO sha256
+	data := make([]byte, 10)
+	for i := range data {
+		data[i] = byte(rand.Intn(256))
+	}
+	res := sha256.Sum256(data)
+	pow.block.Hash = res[:]
 	return nonce, pow.block.Hash
 }
 

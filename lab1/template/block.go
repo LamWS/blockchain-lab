@@ -39,13 +39,12 @@ func (b *Block) Serialize() []byte {
 func NewBlock(datas []string, prevBlockHash []byte) *Block {
 	blockData := [][]byte{}
 	for _, data := range datas {
-		blockData = append(blockData,[]byte(data))
-	} 
+		blockData = append(blockData, []byte(data))
+	}
 
 	block := &Block{time.Now().Unix(), blockData, prevBlockHash, []byte{}, 0}
 	pow := NewProofOfWork(block)
 	nonce, hash := pow.Run()
-
 	block.Hash = hash[:]
 	block.Nonce = nonce
 
