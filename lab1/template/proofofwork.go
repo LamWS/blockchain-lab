@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"math"
 	"math/big"
-	"math/rand"
 )
 
 var (
@@ -29,22 +29,50 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 	return pow
 }
 
+func (pow *ProofOfWork) joinData(nonce int) []byte {
+	data := bytes.Join(
+		[][]byte{
+			pow.block.PrevBlockHash,
+			pow.block.HashData(),
+			IntToHex(pow.block.Timestamp),
+			IntToHex(int64(targetBits)),
+			IntToHex(int64(nonce)),
+		},
+		[]byte{},
+	)
+
+	return data
+}
+
 // Run performs a proof-of-work
 // implement
 func (pow *ProofOfWork) Run() (int, []byte) {
+	var hashInt big.Int
+	var hash [32]byte
 	nonce := 0
-	// TODO sha256
-	data := make([]byte, 10)
-	for i := range data {
-		data[i] = byte(rand.Intn(256))
+
+	for nonce < maxNonce {
+		data := pow.joinData(nonce)
+
+		hash = sha256.Sum256(data)
+		hashInt.SetBytes(hash[:])
+
+		if hashInt.Cmp(pow.target) == -1 {
+			break
+		} else {
+			nonce++
+		}
 	}
-	res := sha256.Sum256(data)
-	pow.block.Hash = res[:]
-	return nonce, pow.block.Hash
+
+	return nonce, hash[:]
 }
 
 // Validate validates block's PoW
 // implement
 func (pow *ProofOfWork) Validate() bool {
-	return true
+	var hashInt big.Int
+	data := pow.joinData(pow.block.Nonce)
+	hash := sha256.Sum256(data)
+	hashInt.SetBytes(hash[:])
+	return hashInt.Cmp(pow.target) == -1
 }

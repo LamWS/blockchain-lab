@@ -27,8 +27,7 @@ type BlockchainIterator struct {
 func (bc *Blockchain) AddBlock(data []string) {
 	err := bc.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
-		block := NewBlock([]string{"testdata"}, bc.tip)
-		println(block.Hash)
+		block := NewBlock(data, bc.tip)
 		err := b.Put(block.Hash, block.Serialize())
 		if err != nil {
 			log.Panic(err)
